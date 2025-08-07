@@ -3,25 +3,17 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { AuthForm, FieldError } from "@/src/components/auth/AuthForm";
+import { loginSchema, type LoginValues } from "@/src/lib/validations";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
+  async function onSubmit(values: LoginValues) {
     setError(null);
-    const res = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
-    if (res?.error) {
-      setError("Invalid credentials");
-    } else {
-      window.location.href = "/admin";
-    }
+    const res = await signIn("credentials", { email: values.email, password: values.password, redirect: false });
+    if (res?.error) setError("Invalid credentials");
+    else window.location.href = "/admin";
   }
 
   return (
@@ -63,35 +55,38 @@ export default function LoginPage() {
           <div className="md:hidden mb-8 text-center">
             <h1 className="text-[#050A24] text-4xl font-bold tracking-wider">GRIFFE</h1>
           </div>
-          <form onSubmit={onSubmit} className="space-y-8">
-            <h2 className="text-[#101828] text-3xl font-semibold">Welcome back</h2>
-            {error && <div className="text-sm text-red-600">{error}</div>}
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <label className="block text-[#344054] text-base">Email</label>
-                <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full h-12 px-4 rounded-lg border-[3px] border-[#D1E9FF] text-[#344054] text-sm focus:outline-none focus:border-[#1570EF]"/>
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <label className="text-[#344054] text-base">Password</label>
-                  <Link href="/auth/forgot-password" className="text-[#1570EF] text-base">Forgot?</Link>
+          <AuthForm type="login" schema={loginSchema} onSubmit={onSubmit} submitLabel="Log in">
+            {({ register, errors, isSubmitting }) => (
+              <>
+                <h2 className="text-[#101828] text-3xl font-semibold">Welcome back</h2>
+                {error && <div role="alert" className="text-sm text-red-600">{error}</div>}
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label htmlFor="email" className="block text-[#344054] text-base">Email</label>
+                    <input id="email" type="email" aria-invalid={!!errors.email} {...register('email' as const)} className="w-full h-12 px-4 rounded-lg border-[3px] border-[#D1E9FF] text-[#344054] text-sm focus:outline-none focus:border-[#1570EF]"/>
+                    <FieldError message={(errors as any).email?.message as string} />
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <label htmlFor="password" className="text-[#344054] text-base">Password</label>
+                      <Link href="/auth/forgot-password" className="text-[#1570EF] text-base">Forgot?</Link>
+                    </div>
+                    <div className="relative">
+                      <input id="password" type={showPassword?"text":"password"} aria-invalid={!!errors.password} {...register('password' as const)} placeholder="Enter your password" className="w-full h-12 px-4 pr-12 rounded-lg border border-[#D0D5DD] text-[#98A2B3] text-sm placeholder-[#98A2B3] focus:outline-none focus:border-[#1570EF]"/>
+                      <button type="button" aria-label={showPassword? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={()=>setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3]">
+                        {showPassword? <EyeOff className="w-6 h-6"/> : <Eye className="w-6 h-6"/>}
+                      </button>
+                    </div>
+                    <FieldError message={(errors as any).password?.message as string} />
+                  </div>
                 </div>
-                <div className="relative">
-                  <input type={showPassword?"text":"password"} value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Enter your password" className="w-full h-12 px-4 pr-12 rounded-lg border border-[#D0D5DD] text-[#98A2B3] text-sm placeholder-[#98A2B3] focus:outline-none focus:border-[#1570EF]"/>
-                  <button type="button" onClick={()=>setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3]">
-                    {showPassword? <EyeOff className="w-6 h-6"/> : <Eye className="w-6 h-6"/>}
-                  </button>
+                <div className="flex items-center justify-center gap-2 text-base">
+                  <span className="text-[#98A2B3]">Don’t have an account?</span>
+                  <Link href="/auth/register" className="text-[#1570EF]">Create one</Link>
                 </div>
-              </div>
-            </div>
-            <div className="space-y-6">
-              <button disabled={loading} className="w-full h-12 bg-[#1570EF] text-white text-base font-semibold rounded-lg hover:bg-[#1570EF]/90">{loading? 'Loading...' : 'Log in'}</button>
-              <div className="flex items-center justify-center gap-2 text-base">
-                <span className="text-[#98A2B3]">Don’t have an account?</span>
-                <Link href="/auth/register" className="text-[#1570EF]">Create one</Link>
-              </div>
-            </div>
-          </form>
+              </>
+            )}
+          </AuthForm>
         </div>
       </div>
     </div>

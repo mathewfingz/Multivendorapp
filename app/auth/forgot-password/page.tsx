@@ -1,18 +1,10 @@
 "use client";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-const schema = z.object({ email: z.string().email() });
-
-type FormValues = z.infer<typeof schema>;
+import { AuthForm, FieldError } from "@/src/components/auth/AuthForm";
+import { forgotSchema, type ForgotValues } from "@/src/lib/validations";
 
 export default function ForgotPasswordPage() {
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormValues>({ resolver: zodResolver(schema) });
-
-  async function onSubmit(values: FormValues) {
-    await fetch('/api/auth/request-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) });
-    reset();
+  async function onSubmit(values: ForgotValues) {
+    await fetch('/api/auth/forgot', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) });
     alert('If the email exists, a reset link has been generated (check server logs).');
   }
 
@@ -23,14 +15,17 @@ export default function ForgotPasswordPage() {
           <div className="mb-8 flex flex-col">
             <h1 className="font-bold text-[28px] leading-[28px] text-[#101828] mx-auto">Recuperar contraseña</h1>
           </div>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-            <div className="space-y-3">
-              <label className="block text-base text-[#344054]">Email</label>
-              <input type="email" aria-invalid={!!errors.email} {...register('email')} className="w-full h-12 px-4 py-3 text-sm text-[#344054] bg-white border-[3px] border-[#D1E9FF] rounded-lg focus:outline-none focus:border-[#1570EF]"/>
-              {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
-            </div>
-            <button disabled={isSubmitting} className="w-full h-12 bg-[#1570EF] hover:bg-blue-600 text-white font-bold text-base rounded-lg">{isSubmitting? 'Enviando...' : 'Enviar enlace'}</button>
-          </form>
+          <AuthForm type="forgot" schema={forgotSchema} onSubmit={onSubmit} submitLabel="Enviar enlace">
+            {({ register, errors, isSubmitting }) => (
+              <div className="space-y-6">
+              <div className="space-y-3">
+                  <label htmlFor="email" className="block text-base text-[#344054]">Email</label>
+                  <input id="email" name="email" type="email" aria-invalid={!!(errors as any).email} {...register('email' as const)} className="w-full h-12 px-4 py-3 text-sm text-[#344054] bg-white border-[3px] border-[#D1E9FF] rounded-lg focus:outline-none focus:border-[#1570EF]"/>
+                  <FieldError message={(errors as any).email?.message as string} />
+                </div>
+              </div>
+            )}
+          </AuthForm>
         </div>
       </div>
     </div>
