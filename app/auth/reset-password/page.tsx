@@ -1,18 +1,31 @@
 "use client";
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { AuthForm, FieldError } from "@/src/components/auth/AuthForm";
 import { resetSchema, type ResetValues } from "@/src/lib/validations";
 
 export default function ResetPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPageContent />
+    </Suspense>
+  );
+}
+
+function ResetPageContent() {
   const search = useSearchParams();
   const router = useRouter();
-  const token = search.get('token');
+  const token = search.get("token");
 
   async function onSubmit(values: ResetValues) {
-    const res = await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password: values.password }) });
+    const res = await fetch("/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, password: values.password }),
+    });
     if (res.ok) {
-      alert('Contraseña actualizada');
-      router.push('/auth/login');
+      alert("Contraseña actualizada");
+      router.push("/auth/login");
     }
   }
 
@@ -25,7 +38,14 @@ export default function ResetPage() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="password" className="block text-base text-[#344054]">Nueva contraseña</label>
-                <input id="password" name="password" type="password" aria-invalid={!!(errors as any).password} {...register('password' as const)} className="w-full h-12 px-4 py-3 text-sm text-[#344054] bg-white border-[3px] border-[#D1E9FF] rounded-lg focus:outline-none focus:border-[#1570EF]"/>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  aria-invalid={!!(errors as any).password}
+                  {...register("password" as const)}
+                  className="w-full h-12 px-4 py-3 text-sm text-[#344054] bg-white border-[3px] border-[#D1E9FF] rounded-lg focus:outline-none focus:border-[#1570EF]"
+                />
                 <FieldError message={(errors as any).password?.message as string} />
               </div>
             </div>
