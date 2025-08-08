@@ -22,3 +22,6 @@ export async function POST(req: Request) {
   console.log(`[RESET] /auth/reset-password?token=${token}`);
   return NextResponse.json({ ok: true });
 }
+
+
+
