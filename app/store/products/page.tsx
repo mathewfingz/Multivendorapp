@@ -1,31 +1,59 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+type Product = { id: string; name: string };
 
 export default function StoreProductsPage() {
-  const [items, setItems] = useState(['T-shirt', 'Hoodie', 'Mug']);
-  function move(i: number, dir: -1 | 1) {
-    const j = i + dir; if (j < 0 || j >= items.length) return;
-    const next = [...items];
-    [next[i], next[j]] = [next[j], next[i]];
-    setItems(next);
+  const [items, setItems] = useState<Product[]>([]);
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  async function load() {
+    setLoading(true);
+    const res = await fetch('/api/products');
+    const data = await res.json();
+    setItems(data.items ?? []);
+    setLoading(false);
   }
+
+  async function addProduct(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    const res = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+    if (res.ok) {
+      setName('');
+      await load();
+    }
+  }
+
+  useEffect(() => { void load(); }, []);
+
   return (
-    <div className="space-y-3">
-      <h2 className="text-xl font-bold">Products (arrange)</h2>
-      <ul className="space-y-2">
-        {items.map((it, i) => (
-          <li key={it} className="border rounded p-2 flex items-center justify-between">
-            <span>{it}</span>
-            <div className="space-x-2">
-              <button className="px-2 py-1 border rounded" onClick={()=>move(i,-1)}>Up</button>
-              <button className="px-2 py-1 border rounded" onClick={()=>move(i,1)}>Down</button>
-            </div>
-          </li>
-        ))}
-      </ul>
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold">Products</h2>
+      <form onSubmit={addProduct} className="flex gap-2 items-end">
+        <div className="flex flex-col">
+          <label className="text-sm">Name</label>
+          <input value={name} onChange={e=>setName(e.target.value)} className="border rounded px-2 py-1" />
+        </div>
+        <button className="px-3 py-2 bg-black text-white rounded">Add</button>
+      </form>
+      {loading ? (
+        <div className="text-sm text-gray-500">Loading...</div>
+      ) : (
+        <ul className="space-y-2">
+          {items.map(it => (
+            <li key={it.id} className="border rounded p-2 flex items-center justify-between">
+              <span>{it.name}</span>
+            </li>
+          ))}
+          {items.length === 0 && <li className="text-sm text-gray-500">No products yet</li>}
+        </ul>
+      )}
     </div>
   );
 }
+
 
 
 

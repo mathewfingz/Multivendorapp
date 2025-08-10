@@ -13,7 +13,10 @@ export default function LoginPage() {
     setError(null);
     const res = await signIn("credentials", { email: values.email, password: values.password, redirect: false });
     if (res?.error) setError("Invalid credentials");
-    else window.location.href = "/admin";
+    else {
+      // Send users to store area; middleware will route ADMINs to /admin automatically
+      window.location.href = "/store";
+    }
   }
 
   return (

@@ -10,10 +10,10 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           <div className="flex flex-col lg:flex-row gap-2 p-3">
             <aside className="lg:w-auto">
               <nav className="space-y-2 text-xs">
-                <div className="px-2 py-1 rounded bg-gray-100">Home</div>
-                <div className="px-2 py-1 rounded">Products</div>
-                <div className="px-2 py-1 rounded">Orders</div>
-                <div className="px-2 py-1 rounded">Profile</div>
+                <a href="/store" className="block px-2 py-1 rounded bg-gray-100">Home</a>
+                <a href="/store/products" className="block px-2 py-1 rounded">Products</a>
+                <a href="/store/orders" className="block px-2 py-1 rounded">Orders</a>
+                <a href="/store/profile" className="block px-2 py-1 rounded">Profile</a>
               </nav>
             </aside>
             <main className="flex-1 bg-white rounded">{children}</main>
